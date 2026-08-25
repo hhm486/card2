@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>미래의 빚 (차트 및 자동저장 포함)</title>
+<title>미래의 빚 (파일 저장/불러오기 지원)</title>
 <style>
     :root {
         --bg-color: #f3f1ec;
@@ -30,9 +30,11 @@
     }
 
     .container { max-width: 1000px; margin: 0 auto; }
-    .header { margin-bottom: 12px; padding: 8px 4px; display: flex; justify-content: space-between; align-items: flex-start; }
+    .header { margin-bottom: 12px; padding: 8px 4px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
     .header-text h1 { font-size: 18px; font-weight: 700; color: var(--text-main); margin: 0 0 4px 0; }
     .header-text p { color: var(--text-sub); font-size: 12px; margin: 0; }
+
+    .header-btns { display: flex; gap: 6px; flex-wrap: wrap; }
 
     .grid-layout {
         display: flex;
@@ -149,6 +151,9 @@
     .btn-add:hover { opacity: 0.9; }
     .btn-del { background-color: #fee2e2; color: var(--accent-red); padding: 3px 6px; }
     .btn-reset { background-color: #edf2f7; color: #4a5568; border: 1px solid #cbd5e1; }
+    .btn-save-file { background-color: #2f855a; color: white; }
+    .btn-load-file { background-color: #2b6cb0; color: white; }
+    
     .btn-col-del {
         background-color: transparent;
         color: var(--accent-red);
@@ -226,14 +231,18 @@
     <div class="header">
         <div class="header-text">
             <h1>📊 미래의 빚</h1>
-            <p>데이터가 브라우저에 자동으로 저장됩니다.</p>
+            <p>자동저장 및 파일 백업/불러오기 기능 지원</p>
         </div>
-        <button class="btn btn-reset" onclick="resetAllData()">🔄 전체 초기화</button>
+        <div class="header-btns">
+            <button class="btn btn-save-file" onclick="exportDataToFile()">📥 파일로 저장 (백업)</button>
+            <button class="btn btn-load-file" onclick="document.getElementById('file-input').click()">📤 파일 불러오기</button>
+            <input type="file" id="file-input" style="display: none;" accept=".json" onchange="importDataFromFile(event)">
+            <button class="btn btn-reset" onclick="resetAllData()">🔄 전체 초기화</button>
+        </div>
     </div>
 
     <!-- 1. 월별 자금 흐름 추이 & 카드별 지출 막대그래프 -->
     <div class="grid-layout" style="margin-bottom: 12px;">
-        <!-- 월별 자금 흐름 표 -->
         <div class="card">
             <div class="card-title">
                 <span>📅 월별 자금 흐름 추이</span>
@@ -294,13 +303,11 @@
             </div>
         </div>
 
-        <!-- 카드별 지출 현황 1자 막대그래프 -->
         <div class="card">
             <div class="card-title">
                 <span>📊 카드별 지출 비교 (1자 그래프)</span>
             </div>
             <div id="card-chart-container" class="chart-container">
-                <!-- 막대 그래프 동적 연동 영역 -->
             </div>
         </div>
     </div>
@@ -377,7 +384,6 @@
     </div>
 
     <div class="grid-layout" id="card-groups-container">
-        <!-- 기본 생성 그룹 (카드 A, B 등) -->
     </div>
 </div>
 
@@ -389,14 +395,12 @@
         return num.toLocaleString('ko-KR') + '원';
     }
 
-    // 1. 행 삭제 공통
     function deleteRow(btn) {
         const tr = btn.closest('tr');
         tr.remove();
         calcAllMonths();
     }
 
-    // 2. 월(열) 동적 추가
     function addMonthColumn(monthName) {
         const monthHeaders = document.querySelectorAll('.th-month');
         const monthCount = monthHeaders.length;
@@ -457,7 +461,6 @@
         calcAllMonths();
     }
 
-    // 3. 월(열) 삭제
     function deleteMonthColumn(btn) {
         const th = btn.closest('th');
         const headerTr = th.parentElement;
@@ -486,7 +489,6 @@
         calcAllMonths();
     }
 
-    // 4. 새로운 일반 지출 항목(행) 추가
     function addFlowRow(labelName) {
         const tbody = document.getElementById('flow-tbody');
         const tr = document.createElement('tr');
@@ -506,7 +508,6 @@
         calcAllMonths();
     }
 
-    // 5. 동적 카드/고정지출 그룹 추가 기능
     function addCardGroup(defaultName, customGroupId) {
         cardGroupIndex++;
         const groupId = customGroupId || ('group_' + cardGroupIndex);
@@ -547,7 +548,6 @@
         `;
         container.appendChild(cardDiv);
 
-        // 연동 테이블 행 생성 (기존 생성되지 않은 경우만)
         if (!document.getElementById('flow-row-' + groupId)) {
             const tbody = document.getElementById('flow-tbody');
             const tr = document.createElement('tr');
@@ -628,14 +628,12 @@
         const totalEl = document.getElementById(groupId + '-total');
         if (totalEl) totalEl.textContent = formatNumber(sum);
 
-        // 연동된 월별 자금 흐름 입력란 전체 금액 즉시 업데이트
         document.querySelectorAll('.card-linked-' + groupId).forEach(input => {
             input.value = sum;
         });
         calcAllMonths();
     }
 
-    // 6. 은행/목표 추가
     function addBankRow(bankName, account, date, amount) {
         const tbody = document.getElementById('bank-tbody');
         const tr = document.createElement('tr');
@@ -669,7 +667,6 @@
         saveData();
     }
 
-    // 7. 자금 흐름 계산 및 차트 동적 업데이트
     function calcAllMonths() {
         const monthHeaders = document.querySelectorAll('.th-month');
         const totalTds = document.querySelectorAll('#total-tr .total-val');
@@ -697,7 +694,6 @@
         saveData();
     }
 
-    // 8. 카드별 1자 막대 그래프 업데이트 함수
     function updateChart() {
         const chartContainer = document.getElementById('card-chart-container');
         chartContainer.innerHTML = '';
@@ -738,8 +734,8 @@
         });
     }
 
-    // 💾 9. 데이터 저장 (localStorage)
-    function saveData() {
+    // 데이터 추출 객체 생성
+    function getFullDataObject() {
         const data = {
             months: [],
             income: [],
@@ -749,28 +745,17 @@
             cardGroups: []
         };
 
-        // 1) 월 제목 저장
-        document.querySelectorAll('.th-month .header-input').forEach(input => {
-            data.months.push(input.value);
-        });
+        document.querySelectorAll('.th-month .header-input').forEach(input => data.months.push(input.value));
+        document.querySelectorAll('#income-row .flow-inc').forEach(input => data.income.push(Number(input.value) || 0));
 
-        // 2) 수입 저장
-        document.querySelectorAll('#income-row .flow-inc').forEach(input => {
-            data.income.push(Number(input.value) || 0);
-        });
-
-        // 3) 지출 항목 저장
         document.querySelectorAll('#flow-tbody tr:not(#income-row)').forEach(row => {
             const label = row.querySelector('input[type="text"]')?.value || '';
             const linkedCard = row.dataset.linkedCard || null;
             const values = [];
-            row.querySelectorAll('input[type="number"]').forEach(input => {
-                values.push(Number(input.value) || 0);
-            });
+            row.querySelectorAll('input[type="number"]').forEach(input => values.push(Number(input.value) || 0));
             data.flowRows.push({ label, values, linkedCard });
         });
 
-        // 4) 은행 계좌 저장
         document.querySelectorAll('#bank-tbody tr').forEach(row => {
             const inputs = row.querySelectorAll('input');
             if (inputs.length >= 4) {
@@ -783,7 +768,6 @@
             }
         });
 
-        // 5) 재무 목표 저장
         document.querySelectorAll('#goal-tbody tr').forEach(row => {
             const inputs = row.querySelectorAll('input');
             const select = row.querySelector('select');
@@ -796,7 +780,6 @@
             }
         });
 
-        // 6) 카드/고정지출 그룹 저장
         document.querySelectorAll('#card-groups-container .card').forEach(group => {
             const groupId = group.id;
             const titleInput = group.querySelector('.card-title-input');
@@ -817,93 +800,123 @@
             data.cardGroups.push({ id: groupId, name, items });
         });
 
+        return data;
+    }
+
+    // 💾 localStorage 자동저장
+    function saveData() {
+        const data = getFullDataObject();
         localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     }
 
-    // 📂 10. 데이터 불러오기 (localStorage)
+    // 📥 파일로 백업 저장
+    function exportDataToFile() {
+        const data = getFullDataObject();
+        const jsonStr = JSON.stringify(data, null, 2);
+        const blob = new Blob([jsonStr], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `미래의빚_백업_${new Date().toISOString().slice(0,10)}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    // 📤 파일에서 데이터 불러오기
+    function importDataFromFile(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const data = JSON.parse(e.target.result);
+                renderDataToUI(data);
+                saveData();
+                alert("성공적으로 데이터를 불러왔습니다!");
+            } catch (err) {
+                alert("올바르지 않은 백업 파일입니다.");
+            }
+        };
+        reader.readAsText(file);
+    }
+
+    // 데이터 화면 렌더링
+    function renderDataToUI(data) {
+        document.getElementById('flow-tbody').innerHTML = '';
+        document.getElementById('bank-tbody').innerHTML = '';
+        document.getElementById('goal-tbody').innerHTML = '';
+        document.getElementById('card-groups-container').innerHTML = '';
+        document.querySelectorAll('.th-month').forEach(el => el.remove());
+
+        data.months.forEach(mName => addMonthColumn(mName));
+
+        if (data.cardGroups && data.cardGroups.length > 0) {
+            data.cardGroups.forEach(grp => {
+                addCardGroup(grp.name, grp.id);
+                grp.items.forEach(item => {
+                    addCardSubItem(grp.id, item.name, item.value);
+                });
+            });
+        }
+
+        const tbody = document.getElementById('flow-tbody');
+        const incTr = document.createElement('tr');
+        incTr.style.backgroundColor = '#f8fafc';
+        incTr.id = 'income-row';
+        let incTds = `<td><input type="text" class="text-left" value="💵 월 수입" readonly style="font-weight: 600; background: transparent; border: none;"></td>`;
+        data.income.forEach(val => {
+            incTds += `<td><input type="number" class="income-input flow-inc" value="${val}" oninput="calcAllMonths()"></td>`;
+        });
+        incTds += `<td class="text-center del-cell">-</td>`;
+        incTr.innerHTML = incTds;
+        tbody.appendChild(incTr);
+
+        data.flowRows.forEach(row => {
+            const tr = document.createElement('tr');
+            if (row.linkedCard) {
+                tr.id = 'flow-row-' + row.linkedCard;
+                tr.dataset.linkedCard = row.linkedCard;
+
+                let tds = `<td><input type="text" class="text-left flow-card-label" value="${row.label}" readonly style="font-weight:600;"></td>`;
+                row.values.forEach(val => {
+                    tds += `<td><input type="number" class="flow-item card-linked-${row.linkedCard}" value="${val}" oninput="calcAllMonths()"></td>`;
+                });
+                tds += `<td class="text-center del-cell"><span style="color:#aaa; font-size:10px;">연동됨</span></td>`;
+                tr.innerHTML = tds;
+            } else {
+                let tds = `<td><input type="text" class="text-left" value="${row.label}" oninput="saveData()"></td>`;
+                row.values.forEach(val => {
+                    tds += `<td><input type="number" class="flow-item" value="${val}" oninput="calcAllMonths()"></td>`;
+                });
+                tds += `<td class="text-center del-cell"><button class="btn btn-del" onclick="deleteRow(this)">X</button></td>`;
+                tr.innerHTML = tds;
+            }
+            tbody.appendChild(tr);
+        });
+
+        data.banks.forEach(b => addBankRow(b.name, b.account, b.date, b.amount));
+        data.goals.forEach(g => addGoalRow(g.item, g.type, g.plan));
+
+        calcAllMonths();
+    }
+
     function loadData() {
         const rawData = localStorage.getItem(STORAGE_KEY);
         if (!rawData) return false;
 
         try {
             const data = JSON.parse(rawData);
-
-            // 기존 요소들 초기화
-            document.getElementById('flow-tbody').innerHTML = '';
-            document.getElementById('bank-tbody').innerHTML = '';
-            document.getElementById('goal-tbody').innerHTML = '';
-            document.getElementById('card-groups-container').innerHTML = '';
-
-            // 헤더 월 제거 후 복원
-            document.querySelectorAll('.th-month').forEach(el => el.remove());
-
-            // 1) 월 생성
-            data.months.forEach(mName => addMonthColumn(mName));
-
-            // 2) 카드 그룹 복원
-            if (data.cardGroups && data.cardGroups.length > 0) {
-                data.cardGroups.forEach(grp => {
-                    addCardGroup(grp.name, grp.id);
-                    grp.items.forEach(item => {
-                        addCardSubItem(grp.id, item.name, item.value);
-                    });
-                });
-            }
-
-            // 3) 지출 추이 수입/항목 복원
-            const tbody = document.getElementById('flow-tbody');
-            
-            // 수입 행 복원
-            const incTr = document.createElement('tr');
-            incTr.style.backgroundColor = '#f8fafc';
-            incTr.id = 'income-row';
-            let incTds = `<td><input type="text" class="text-left" value="💵 월 수입" readonly style="font-weight: 600; background: transparent; border: none;"></td>`;
-            data.income.forEach(val => {
-                incTds += `<td><input type="number" class="income-input flow-inc" value="${val}" oninput="calcAllMonths()"></td>`;
-            });
-            incTds += `<td class="text-center del-cell">-</td>`;
-            incTr.innerHTML = incTds;
-            tbody.appendChild(incTr);
-
-            // 일반 및 연동 항목 복원
-            data.flowRows.forEach(row => {
-                const tr = document.createElement('tr');
-                if (row.linkedCard) {
-                    tr.id = 'flow-row-' + row.linkedCard;
-                    tr.dataset.linkedCard = row.linkedCard;
-
-                    let tds = `<td><input type="text" class="text-left flow-card-label" value="${row.label}" readonly style="font-weight:600;"></td>`;
-                    row.values.forEach(val => {
-                        tds += `<td><input type="number" class="flow-item card-linked-${row.linkedCard}" value="${val}" oninput="calcAllMonths()"></td>`;
-                    });
-                    tds += `<td class="text-center del-cell"><span style="color:#aaa; font-size:10px;">연동됨</span></td>`;
-                    tr.innerHTML = tds;
-                } else {
-                    let tds = `<td><input type="text" class="text-left" value="${row.label}" oninput="saveData()"></td>`;
-                    row.values.forEach(val => {
-                        tds += `<td><input type="number" class="flow-item" value="${val}" oninput="calcAllMonths()"></td>`;
-                    });
-                    tds += `<td class="text-center del-cell"><button class="btn btn-del" onclick="deleteRow(this)">X</button></td>`;
-                    tr.innerHTML = tds;
-                }
-                tbody.appendChild(tr);
-            });
-
-            // 4) 은행 복원
-            data.banks.forEach(b => addBankRow(b.name, b.account, b.date, b.amount));
-
-            // 5) 목표 복원
-            data.goals.forEach(g => addGoalRow(g.item, g.type, g.plan));
-
-            calcAllMonths();
+            renderDataToUI(data);
             return true;
         } catch (e) {
-            console.error("데이터 로드 중 오류 발생:", e);
             return false;
         }
     }
 
-    // 🔄 데이터 초기화 함수
     function resetAllData() {
         if (confirm("모든 입력 내용 및 데이터가 초기화됩니다. 계속 진행하시겠습니까?")) {
             localStorage.removeItem(STORAGE_KEY);
@@ -914,7 +927,6 @@
     window.onload = function() {
         const hasLoaded = loadData();
         if (!hasLoaded) {
-            // 저장된 데이터가 없는 초기의 경우 기본 세팅 실행
             const g1 = addCardGroup('카드 A');
             addCardSubItem(g1, '고정지출 1', 0);
             const g2 = addCardGroup('카드 B');
