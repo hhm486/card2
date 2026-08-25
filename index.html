@@ -17,9 +17,7 @@
         --accent-red: #c53030;
         --input-bg: #f8fafc;
     }
-
     * { box-sizing: border-box; }
-
     body {
         font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Segoe UI", Roboto, Arial, sans-serif;
         background-color: var(--bg-color);
@@ -28,28 +26,23 @@
         margin: 0;
         padding: 10px;
     }
-
     .container { max-width: 1000px; margin: 0 auto; }
     .header { margin-bottom: 12px; padding: 8px 4px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
     .header-text h1 { font-size: 18px; font-weight: 700; color: var(--text-main); margin: 0 0 4px 0; }
     .header-text p { color: var(--text-sub); font-size: 12px; margin: 0; }
-
     .header-btns { display: flex; gap: 6px; flex-wrap: wrap; }
-
     .grid-layout {
         display: flex;
         flex-direction: column;
         gap: 12px;
         margin-bottom: 12px;
     }
-
     @media (min-width: 768px) {
         .grid-layout {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
         }
     }
-
     .card {
         background: var(--card-bg);
         border-radius: 12px;
@@ -57,7 +50,6 @@
         box-shadow: 0 2px 5px rgba(0,0,0,0.03);
         border: 1px solid var(--border-color);
     }
-
     .card-title {
         font-size: 14px;
         font-weight: 600;
@@ -67,9 +59,7 @@
         justify-content: space-between;
         color: var(--primary);
     }
-
     .btn-group-header { display: flex; gap: 6px; }
-
     .table-wrapper {
         width: 100%;
         overflow-x: auto;
@@ -77,7 +67,6 @@
         border-radius: 8px;
         border: 1px solid var(--border-color);
     }
-
     table {
         width: 100%;
         border-collapse: collapse;
@@ -85,23 +74,19 @@
         white-space: nowrap;
         background-color: #ffffff;
     }
-
     th, td {
         padding: 6px 4px;
         text-align: left;
         border-bottom: 1px solid var(--border-color);
         vertical-align: middle;
     }
-
     th {
         background-color: var(--primary-light);
         color: var(--primary);
         font-weight: 600;
     }
-
     .text-right { text-align: right; }
     .text-center { text-align: center; }
-
     input[type="number"], input[type="text"], select {
         width: 100%;
         min-width: 60px;
@@ -114,28 +99,23 @@
         color: var(--text-main);
         transition: all 0.2s;
     }
-
     input[type="text"].text-left { text-align: left; }
     input[type="text"].text-center { text-align: center; }
-
     input:focus, select:focus {
         outline: none;
         border-color: var(--primary);
         background-color: #ffffff;
         box-shadow: 0 0 0 2px rgba(59, 89, 152, 0.15);
     }
-
     .income-input {
         background-color: #f0fdf4 !important;
         font-weight: 600;
         color: #166534 !important;
     }
-
     .total-row { background-color: #fff5f5; color: var(--accent-red); font-weight: 700; }
     .remaining-row { background-color: #f0fdf4; color: var(--accent-green); font-weight: 700; }
     .total-val { font-weight: 700; color: var(--accent-red); padding: 6px 4px; }
     .rem-val { font-weight: 700; color: var(--accent-green); padding: 6px 4px; }
-
     .btn {
         padding: 5px 9px;
         border: none;
@@ -146,14 +126,12 @@
         white-space: nowrap;
         touch-action: manipulation;
     }
-
     .btn-add { background-color: var(--primary); color: white; }
     .btn-add:hover { opacity: 0.9; }
     .btn-del { background-color: #fee2e2; color: var(--accent-red); padding: 3px 6px; }
     .btn-reset { background-color: #edf2f7; color: #4a5568; border: 1px solid #cbd5e1; }
     .btn-save-file { background-color: #2f855a; color: white; }
     .btn-load-file { background-color: #2b6cb0; color: white; }
-    
     .btn-col-del {
         background-color: transparent;
         color: var(--accent-red);
@@ -163,7 +141,6 @@
         margin-left: 2px;
         font-weight: bold;
     }
-
     .header-input {
         background-color: transparent !important;
         border: 1px solid transparent !important;
@@ -179,10 +156,7 @@
         border: 1px solid var(--primary) !important;
         background-color: #ffffff !important;
     }
-
     .th-month-container { display: flex; align-items: center; justify-content: center; }
-
-    /* 막대 그래프 스타일 */
     .chart-container {
         display: flex;
         flex-direction: column;
@@ -226,7 +200,6 @@
 </style>
 </head>
 <body>
-
 <div class="container">
     <div class="header">
         <div class="header-text">
@@ -305,7 +278,7 @@
 
         <div class="card">
             <div class="card-title">
-                <span>📊 카드별 지출 비교 (1자 그래프)</span>
+                <span>📊 카드별 지출 비교 (막대 그래프)</span>
             </div>
             <div id="card-chart-container" class="chart-container">
             </div>
@@ -382,7 +355,6 @@
         <h3 style="margin: 0; font-size: 15px; color: var(--primary);">💳 세부 고정지출 그룹 (동적 관리)</h3>
         <button class="btn btn-add" style="background-color: #2b6cb0;" onclick="addCardGroup()">+ 새 카드/고정지출 그룹 추가</button>
     </div>
-
     <div class="grid-layout" id="card-groups-container">
     </div>
 </div>
@@ -401,7 +373,7 @@
         calcAllMonths();
     }
 
-    function addMonthColumn(monthName) {
+    function addMonthColumn(monthName, incomeVal = 0) {
         const monthHeaders = document.querySelectorAll('.th-month');
         const monthCount = monthHeaders.length;
         const newMonthName = monthName || ((monthCount + 1) + '월');
@@ -423,7 +395,7 @@
         const incomeRow = document.getElementById('income-row');
         const incomeDelCell = incomeRow.querySelector('.del-cell');
         const newIncTd = document.createElement('td');
-        newIncTd.innerHTML = `<input type="number" class="income-input flow-inc" value="0" oninput="calcAllMonths()">`;
+        newIncTd.innerHTML = `<input type="number" class="income-input flow-inc" value="${incomeVal}" oninput="calcAllMonths()">`;
         incomeRow.insertBefore(newIncTd, incomeDelCell);
 
         const bodyRows = document.querySelectorAll('#flow-tbody tr:not(#income-row)');
@@ -489,14 +461,15 @@
         calcAllMonths();
     }
 
-    function addFlowRow(labelName) {
+    function addFlowRow(labelName, values = []) {
         const tbody = document.getElementById('flow-tbody');
         const tr = document.createElement('tr');
         
         const monthCount = document.querySelectorAll('.th-month').length;
         let monthInputsHtml = '';
         for (let i = 0; i < monthCount; i++) {
-            monthInputsHtml += `<td><input type="number" class="flow-item" value="0" oninput="calcAllMonths()"></td>`;
+            const val = (values && values[i] !== undefined) ? values[i] : 0;
+            monthInputsHtml += `<td><input type="number" class="flow-item" value="${val}" oninput="calcAllMonths()"></td>`;
         }
 
         tr.innerHTML = `
@@ -734,7 +707,6 @@
         });
     }
 
-    // 데이터 추출 객체 생성
     function getFullDataObject() {
         const data = {
             months: [],
@@ -803,13 +775,11 @@
         return data;
     }
 
-    // 💾 localStorage 자동저장
     function saveData() {
         const data = getFullDataObject();
         localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     }
 
-    // 📥 파일로 백업 저장
     function exportDataToFile() {
         const data = getFullDataObject();
         const jsonStr = JSON.stringify(data, null, 2);
@@ -825,7 +795,6 @@
         URL.revokeObjectURL(url);
     }
 
-    // 📤 파일에서 데이터 불러오기
     function importDataFromFile(event) {
         const file = event.target.files[0];
         if (!file) return;
@@ -844,97 +813,122 @@
         reader.readAsText(file);
     }
 
-    // 데이터 화면 렌더링
     function renderDataToUI(data) {
-        document.getElementById('flow-tbody').innerHTML = '';
-        document.getElementById('bank-tbody').innerHTML = '';
-        document.getElementById('goal-tbody').innerHTML = '';
-        document.getElementById('card-groups-container').innerHTML = '';
-        document.querySelectorAll('.th-month').forEach(el => el.remove());
+        if (!data) return;
 
-        data.months.forEach(mName => addMonthColumn(mName));
+        const headerTr = document.getElementById('flow-thead-tr');
+        document.querySelectorAll('.th-month').forEach(th => th.remove());
+        const delColHeader = headerTr.querySelector('.del-col-header');
 
-        if (data.cardGroups && data.cardGroups.length > 0) {
-            data.cardGroups.forEach(grp => {
-                addCardGroup(grp.name, grp.id);
-                grp.items.forEach(item => {
-                    addCardSubItem(grp.id, item.name, item.value);
-                });
+        if (data.months && data.months.length > 0) {
+            data.months.forEach((m, idx) => {
+                const newTh = document.createElement('th');
+                newTh.className = 'text-center th-month';
+                newTh.style.minWidth = '70px';
+                newTh.innerHTML = `
+                    <div class="th-month-container">
+                        <input type="text" class="header-input" value="${m}" oninput="saveData()">
+                        <button class="btn-col-del" onclick="deleteMonthColumn(this)">✕</button>
+                    </div>
+                `;
+                headerTr.insertBefore(newTh, delColHeader);
+            });
+        } else {
+            addMonthColumn('1월');
+            addMonthColumn('2월');
+        }
+
+        const incomeRow = document.getElementById('income-row');
+        const incomeDelCell = incomeRow.querySelector('.del-cell');
+        incomeRow.querySelectorAll('td:not(:first-child):not(.del-cell)').forEach(td => td.remove());
+        
+        if (data.income && data.income.length > 0) {
+            data.income.forEach(inc => {
+                const newTd = document.createElement('td');
+                newTd.innerHTML = `<input type="number" class="income-input flow-inc" value="${inc}" oninput="calcAllMonths()">`;
+                incomeRow.insertBefore(newTd, incomeDelCell);
             });
         }
 
-        const tbody = document.getElementById('flow-tbody');
-        const incTr = document.createElement('tr');
-        incTr.style.backgroundColor = '#f8fafc';
-        incTr.id = 'income-row';
-        let incTds = `<td><input type="text" class="text-left" value="💵 월 수입" readonly style="font-weight: 600; background: transparent; border: none;"></td>`;
-        data.income.forEach(val => {
-            incTds += `<td><input type="number" class="income-input flow-inc" value="${val}" oninput="calcAllMonths()"></td>`;
-        });
-        incTds += `<td class="text-center del-cell">-</td>`;
-        incTr.innerHTML = incTds;
-        tbody.appendChild(incTr);
+        document.getElementById('card-groups-container').innerHTML = '';
+        cardGroupIndex = 0;
+        
+        const flowTbody = document.getElementById('flow-tbody');
+        flowTbody.querySelectorAll('tr:not(#income-row)').forEach(tr => tr.remove());
 
-        data.flowRows.forEach(row => {
-            const tr = document.createElement('tr');
-            if (row.linkedCard) {
-                tr.id = 'flow-row-' + row.linkedCard;
-                tr.dataset.linkedCard = row.linkedCard;
+        if (data.cardGroups && data.cardGroups.length > 0) {
+            data.cardGroups.forEach(group => {
+                const newGroupId = addCardGroup(group.name, group.id);
+                if (group.items && group.items.length > 0) {
+                    group.items.forEach(item => {
+                        addCardSubItem(newGroupId, item.name, item.value);
+                    });
+                }
+            });
+        } else {
+            const g1 = addCardGroup('카드 A', 'group_1');
+            addCardSubItem(g1, '통신비', 50000);
+            addCardSubItem(g1, '교통비', 100000);
+            const g2 = addCardGroup('카드 B', 'group_2');
+            addCardSubItem(g2, '식비', 200000);
+        }
 
-                let tds = `<td><input type="text" class="text-left flow-card-label" value="${row.label}" readonly style="font-weight:600;"></td>`;
-                row.values.forEach(val => {
-                    tds += `<td><input type="number" class="flow-item card-linked-${row.linkedCard}" value="${val}" oninput="calcAllMonths()"></td>`;
-                });
-                tds += `<td class="text-center del-cell"><span style="color:#aaa; font-size:10px;">연동됨</span></td>`;
-                tr.innerHTML = tds;
-            } else {
-                let tds = `<td><input type="text" class="text-left" value="${row.label}" oninput="saveData()"></td>`;
-                row.values.forEach(val => {
-                    tds += `<td><input type="number" class="flow-item" value="${val}" oninput="calcAllMonths()"></td>`;
-                });
-                tds += `<td class="text-center del-cell"><button class="btn btn-del" onclick="deleteRow(this)">X</button></td>`;
-                tr.innerHTML = tds;
-            }
-            tbody.appendChild(tr);
-        });
+        if (data.flowRows && data.flowRows.length > 0) {
+            data.flowRows.forEach(row => {
+                if (!row.linkedCard) {
+                    addFlowRow(row.label, row.values);
+                }
+            });
+        }
 
-        data.banks.forEach(b => addBankRow(b.name, b.account, b.date, b.amount));
-        data.goals.forEach(g => addGoalRow(g.item, g.type, g.plan));
+        const bankTbody = document.getElementById('bank-tbody');
+        bankTbody.innerHTML = '';
+        if (data.banks && data.banks.length > 0) {
+            data.banks.forEach(b => {
+                addBankRow(b.name, b.account, b.date, b.amount);
+            });
+        } else {
+            addBankRow('주거래은행', '000-000-000000', '1일', 0);
+        }
+
+        const goalTbody = document.getElementById('goal-tbody');
+        goalTbody.innerHTML = '';
+        if (data.goals && data.goals.length > 0) {
+            data.goals.forEach(g => {
+                addGoalRow(g.item, g.type, g.plan);
+            });
+        } else {
+            addGoalRow('비상금 마련', '목표', '3개월치 생활비 구축');
+        }
 
         calcAllMonths();
     }
 
-    function loadData() {
-        const rawData = localStorage.getItem(STORAGE_KEY);
-        if (!rawData) return false;
-
-        try {
-            const data = JSON.parse(rawData);
-            renderDataToUI(data);
-            return true;
-        } catch (e) {
-            return false;
-        }
-    }
-
     function resetAllData() {
-        if (confirm("모든 입력 내용 및 데이터가 초기화됩니다. 계속 진행하시겠습니까?")) {
+        if (confirm('모든 데이터를 초기화하시겠습니까?')) {
             localStorage.removeItem(STORAGE_KEY);
             location.reload();
         }
     }
 
     window.onload = function() {
-        const hasLoaded = loadData();
-        if (!hasLoaded) {
-            const g1 = addCardGroup('카드 A');
-            addCardSubItem(g1, '고정지출 1', 0);
-            const g2 = addCardGroup('카드 B');
-            addCardSubItem(g2, '고정지출 1', 0);
+        const savedData = localStorage.getItem(STORAGE_KEY);
+        if (savedData) {
+            try {
+                const data = JSON.parse(savedData);
+                renderDataToUI(data);
+            } catch (e) {
+                console.error(e);
+            }
+        } else {
+            const g1 = addCardGroup('카드 A', 'group_1');
+            addCardSubItem(g1, '통신비', 60000);
+            addCardSubItem(g1, '교통비', 80000);
+            const g2 = addCardGroup('카드 B', 'group_2');
+            addCardSubItem(g2, '식비', 150000);
             calcAllMonths();
         }
     };
 </script>
-
 </body>
 </html>
