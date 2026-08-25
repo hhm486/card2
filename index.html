@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>미래의 빚 (차트 포함)</title>
+<style>
+    :root {
+        --bg-color: #f3f1ec;
+        --card-bg: #ffffff;
+        --primary: #3b5998;
+        --primary-light: #eef2f7;
+        --text-main: #2d3748;
+        --text-sub: #718096;
+        --border-color: #e2e8f0;
+        --accent-green: #2f855a;
+        --accent-red: #c53030;
+        --input-bg: #f8fafc;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Segoe UI", Roboto, Arial, sans-serif;
+        background-color: var(--bg-color);
+        color: var(--text-main);
+        line-height: 1.5;
+        margin: 0;
+        padding: 10px;
+    }
+
+    .container { max-width: 1000px; margin: 0 auto; }
+    .header { margin-bottom: 12px; padding: 8px 4px; }
+    .header h1 { font-size: 18px; font-weight: 700; color: var(--text-main); margin: 0 0 4px 0; }
+    .header p { color: var(--text-sub); font-size: 12px; margin: 0; }
+
+    .grid-layout {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    @media (min-width: 768px) {
+        .grid-layout {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    .card {
+        background: var(--card-bg);
+        border-radius: 12px;
+        padding: 12px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+        border: 1px solid var(--border-color);
+    }
+
+    .card-title {
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        color: var(--primary);
+    }
+
+    .btn-group-header { display: flex; gap: 6px; }
+
+    .table-wrapper {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+        white-space: nowrap;
+        background-color: #ffffff;
+    }
+
+    th, td {
+        padding: 6px 4px;
+        text-align: left;
+        border-bottom: 1px solid var(--border-color);
+        vertical-align: middle;
+    }
+
+    th {
+        background-color: var(--primary-light);
+        color: var(--primary);
+        font-weight: 600;
+    }
+
+    .text-right { text-align: right; }
+    .text-center { text-align: center; }
+
+    input[type="number"], input[type="text"], select {
+        width: 100%;
+        min-width: 60px;
+        padding: 6px 4px;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        font-size: 12px;
+        text-align: right;
+        background-color: var(--input-bg);
+        color: var(--text-main);
+        transition: all 0.2s;
+    }
+
+    input[type="text"].text-left { text-align: left; }
+    input[type="text"].text-center { text-align: center; }
+
+    input:focus, select:focus {
+        outline: none;
+        border-color: var(--primary);
+        background-color: #ffffff;
+        box-shadow: 0 0 0 2px rgba(59, 89, 152, 0.15);
+    }
+
+    .income-input {
+        background-color: #f0fdf4 !important;
+        font-weight: 600;
+        color: #166534 !important;
+    }
+
+    .total-row { background-color: #fff5f5; color: var(--accent-red); font-weight: 700; }
+    .remaining-row { background-color: #f0fdf4; color: var(--accent-green); font-weight: 700; }
+    .total-val { font-weight: 700; color: var(--accent-red); padding: 6px 4px; }
+    .rem-val { font-weight: 700; color: var(--accent-green); padding: 6px 4px; }
+
+    .btn {
+        padding: 5px 9px;
+        border: none;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 600;
+        cursor: pointer;
+        white-space: nowrap;
+        touch-action: manipulation;
+    }
+
+    .btn-add { background-color: var(--primary); color: white; }
+    .btn-add:hover { opacity: 0.9; }
+    .btn-del { background-color: #fee2e2; color: var(--accent-red); padding: 3px 6px; }
+    .btn-col-del {
+        background-color: transparent;
+        color: var(--accent-red);
+        border: none;
+        font-size: 11px;
+        cursor: pointer;
+        margin-left: 2px;
+        font-weight: bold;
+    }
+
+    .header-input {
+        background-color: transparent !important;
+        border: 1px solid transparent !important;
+        font-weight: 700 !important;
+        color: var(--primary) !important;
+        text-align: center !important;
+        padding: 2px !important;
+        min-width: 45px !important;
+        display: inline-block;
+        width: 100px !important;
+    }
+    .header-input:hover, .header-input:focus {
+        border: 1px solid var(--primary) !important;
+        background-color: #ffffff !important;
+    }
+
+    .th-month-container { display: flex; align-items: center; justify-content: center; }
+
+    /* 막대 그래프 스타일 */
+    .chart-container {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 5px;
+    }
+    .chart-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 11px;
+    }
+    .chart-label {
+        width: 70px;
+        font-weight: 600;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .chart-bar-bg {
+        flex: 1;
+        background-color: #e2e8f0;
+        border-radius: 10px;
+        height: 14px;
+        overflow: hidden;
+        position: relative;
+    }
+    .chart-bar-fill {
+        background-color: var(--primary);
+        height: 100%;
+        border-radius: 10px;
+        width: 0%;
+        transition: width 0.3s ease;
+    }
+    .chart-value {
+        width: 65px;
+        text-align: right;
+        font-weight: 600;
+        color: var(--accent-red);
+    }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>📊 미래의 빚</h1>
+        <p>눈이 편안한 소프트 톤 기반의 모바일 최적화 자금 관리 화면입니다.</p>
+    </div>
+
+    <!-- 1. 월별 자금 흐름 추이 & 카드별 지출 막대그래프 -->
+    <div class="grid-layout" style="margin-bottom: 12px;">
+        <!-- 월별 자금 흐름 표 -->
+        <div class="card">
+            <div class="card-title">
+                <span>📅 월별 자금 흐름 추이</span>
+                <div class="btn-group-header">
+                    <button class="btn btn-add" onclick="addMonthColumn()">+ 월 추가</button>
+                    <button class="btn btn-add" style="background-color: #4a5568;" onclick="addFlowRow()">+ 항목 추가</button>
+                </div>
+            </div>
+            <div class="table-wrapper">
+                <table id="flow-table">
+                    <thead>
+                        <tr id="flow-thead-tr">
+                            <th style="min-width: 90px;">항목명</th>
+                            <th class="text-center th-month" style="min-width: 70px;">
+                                <div class="th-month-container">
+                                    <input type="text" class="header-input" value="1월">
+                                    <button class="btn-col-del" onclick="deleteMonthColumn(this)">✕</button>
+                                </div>
+                            </th>
+                            <th class="text-center th-month" style="min-width: 70px;">
+                                <div class="th-month-container">
+                                    <input type="text" class="header-input" value="2월">
+                                    <button class="btn-col-del" onclick="deleteMonthColumn(this)">✕</button>
+                                </div>
+                            </th>
+                            <th class="text-center del-col-header" style="width: 35px;">삭제</th>
+                        </tr>
+                    </thead>
+                    <tbody id="flow-tbody">
+                        <tr style="background-color: #f8fafc;" id="income-row">
+                            <td><input type="text" class="text-left" value="💵 월 수입" readonly style="font-weight: 600; background: transparent; border: none;"></td>
+                            <td><input type="number" class="income-input flow-inc" value="0" oninput="calcAllMonths()"></td>
+                            <td><input type="number" class="income-input flow-inc" value="0" oninput="calcAllMonths()"></td>
+                            <td class="text-center del-cell">-</td>
+                        </tr>
+                        <tr>
+                            <td><input type="text" class="text-left" value="기타 지출 항목"></td>
+                            <td><input type="number" class="flow-item" value="0" oninput="calcAllMonths()"></td>
+                            <td><input type="number" class="flow-item" value="0" oninput="calcAllMonths()"></td>
+                            <td class="text-center del-cell"><button class="btn btn-del" onclick="deleteRow(this)">X</button></td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr class="total-row" id="total-tr">
+                            <td>지출 합계</td>
+                            <td class="text-right total-val">0원</td>
+                            <td class="text-right total-val">0원</td>
+                            <td class="del-cell"></td>
+                        </tr>
+                        <tr class="remaining-row" id="rem-tr">
+                            <td>💡 남는 돈</td>
+                            <td class="text-right rem-val">0원</td>
+                            <td class="text-right rem-val">0원</td>
+                            <td class="del-cell"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+        <!-- 카드별 지출 현황 1자 막대그래프 -->
+        <div class="card">
+            <div class="card-title">
+                <span>📊 카드별 지출 비교 (1자 그래프)</span>
+            </div>
+            <div id="card-chart-container" class="chart-container">
+                <!-- 막대 그래프 동적 연동 영역 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. 은행 계좌 및 목표 -->
+    <div class="grid-layout">
+        <div class="card">
+            <div class="card-title">
+                <span>🏦 은행 계좌 현황</span>
+                <button class="btn btn-add" onclick="addBankRow()">+ 추가</button>
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="min-width: 75px;">은행명</th>
+                            <th style="min-width: 110px;">계좌번호</th>
+                            <th class="text-center" style="width: 45px;">이체일</th>
+                            <th class="text-right" style="min-width: 70px;">금액</th>
+                            <th class="text-center" style="width: 35px;">삭제</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bank-tbody">
+                        <tr>
+                            <td><input type="text" class="text-left" value="주거래은행"></td>
+                            <td><input type="text" class="text-left" value="000-000-000000"></td>
+                            <td><input type="text" class="text-center" value="1일"></td>
+                            <td><input type="number" value="0"></td>
+                            <td class="text-center"><button class="btn btn-del" onclick="deleteRow(this)">X</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">
+                <span>🎯 재무 및 대출 상환 목표</span>
+                <button class="btn btn-add" onclick="addGoalRow()">+ 추가</button>
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="min-width: 90px;">목표 항목</th>
+                            <th style="width: 70px;">유형</th>
+                            <th style="min-width: 110px;">상세 계획</th>
+                            <th class="text-center" style="width: 35px;">삭제</th>
+                        </tr>
+                    </thead>
+                    <tbody id="goal-tbody">
+                        <tr>
+                            <td><input type="text" class="text-left" value="목표 항목 1"></td>
+                            <td>
+                                <select>
+                                    <option value="목표" selected>목표</option>
+                                    <option value="상환방법">상환</option>
+                                    <option value="적립방법">적립</option>
+                                </select>
+                            </td>
+                            <td><input type="text" class="text-left" value="상세 계획 입력"></td>
+                            <td class="text-center"><button class="btn btn-del" onclick="deleteRow(this)">X</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. 동적 카드/고정지출 그룹 섹션 -->
+    <div style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="margin: 0; font-size: 15px; color: var(--primary);">💳 세부 고정지출 그룹 (동적 관리)</h3>
+        <button class="btn btn-add" style="background-color: #2b6cb0;" onclick="addCardGroup()">+ 새 카드/고정지출 그룹 추가</button>
+    </div>
+
+    <div class="grid-layout" id="card-groups-container">
+        <!-- 기본 생성 그룹 (카드 A, B 등) -->
+    </div>
+</div>
+
+<script>
+    let cardGroupIndex = 0;
+
+    function formatNumber(num) {
+        return num.toLocaleString('ko-KR') + '원';
+    }
+
+    // 1. 행 삭제 공통
+    function deleteRow(btn) {
+        const tr = btn.closest('tr');
+        tr.remove();
+        calcAllMonths();
+    }
+
+    // 2. 월(열) 동적 추가
+    function addMonthColumn() {
+        const monthHeaders = document.querySelectorAll('.th-month');
+        const monthCount = monthHeaders.length;
+        const newMonthName = (monthCount + 1) + '월';
+
+        const headerTr = document.getElementById('flow-thead-tr');
+        const delColHeader = headerTr.querySelector('.del-col-header');
+        
+        const newTh = document.createElement('th');
+        newTh.className = 'text-center th-month';
+        newTh.style.minWidth = '70px';
+        newTh.innerHTML = `
+            <div class="th-month-container">
+                <input type="text" class="header-input" value="${newMonthName}">
+                <button class="btn-col-del" onclick="deleteMonthColumn(this)">✕</button>
+            </div>
+        `;
+        headerTr.insertBefore(newTh, delColHeader);
+
+        const incomeRow = document.getElementById('income-row');
+        const incomeDelCell = incomeRow.querySelector('.del-cell');
+        const newIncTd = document.createElement('td');
+        newIncTd.innerHTML = `<input type="number" class="income-input flow-inc" value="0" oninput="calcAllMonths()">`;
+        incomeRow.insertBefore(newIncTd, incomeDelCell);
+
+        const bodyRows = document.querySelectorAll('#flow-tbody tr:not(#income-row)');
+        bodyRows.forEach(row => {
+            const delCell = row.querySelector('.del-cell');
+            const newTd = document.createElement('td');
+            const linkedCardId = row.dataset.linkedCard;
+
+            let classList = 'flow-item';
+            let initialVal = 0;
+
+            if (linkedCardId) {
+                classList += ' card-linked-' + linkedCardId;
+                initialVal = getCardGroupSum(linkedCardId);
+            }
+
+            newTd.innerHTML = `<input type="number" class="${classList}" value="${initialVal}" oninput="calcAllMonths()">`;
+            row.insertBefore(newTd, delCell);
+        });
+
+        const totalTr = document.getElementById('total-tr');
+        const totalDelCell = totalTr.querySelector('.del-cell');
+        const newTotalTd = document.createElement('td');
+        newTotalTd.className = 'text-right total-val';
+        newTotalTd.textContent = '0원';
+        totalTr.insertBefore(newTotalTd, totalDelCell);
+
+        const remTr = document.getElementById('rem-tr');
+        const remDelCell = remTr.querySelector('.del-cell');
+        const newRemTd = document.createElement('td');
+        newRemTd.className = 'text-right rem-val';
+        newRemTd.textContent = '0원';
+        remTr.insertBefore(newRemTd, remDelCell);
+
+        calcAllMonths();
+    }
+
+    // 3. 월(열) 삭제
+    function deleteMonthColumn(btn) {
+        const th = btn.closest('th');
+        const headerTr = th.parentElement;
+        const colIndex = Array.from(headerTr.children).indexOf(th);
+
+        if (document.querySelectorAll('.th-month').length <= 1) {
+            alert('최소 1개의 월은 유지되어야 합니다.');
+            return;
+        }
+
+        th.remove();
+
+        const tbodyRows = document.querySelectorAll('#flow-tbody tr');
+        tbodyRows.forEach(row => {
+            if (row.children[colIndex]) {
+                row.children[colIndex].remove();
+            }
+        });
+
+        const totalTr = document.getElementById('total-tr');
+        if (totalTr.children[colIndex]) totalTr.children[colIndex].remove();
+
+        const remTr = document.getElementById('rem-tr');
+        if (remTr.children[colIndex]) remTr.children[colIndex].remove();
+
+        calcAllMonths();
+    }
+
+    // 4. 새로운 일반 지출 항목(행) 추가
+    function addFlowRow() {
+        const tbody = document.getElementById('flow-tbody');
+        const tr = document.createElement('tr');
+        
+        const monthCount = document.querySelectorAll('.th-month').length;
+        let monthInputsHtml = '';
+        for (let i = 0; i < monthCount; i++) {
+            monthInputsHtml += `<td><input type="number" class="flow-item" value="0" oninput="calcAllMonths()"></td>`;
+        }
+
+        tr.innerHTML = `
+            <td><input type="text" class="text-left" value="새 지출 항목"></td>
+            ${monthInputsHtml}
+            <td class="text-center del-cell"><button class="btn btn-del" onclick="deleteRow(this)">X</button></td>
+        `;
+        tbody.appendChild(tr);
+        calcAllMonths();
+    }
+
+    // 5. 동적 카드/고정지출 그룹 추가 기능
+    function addCardGroup(defaultName) {
+        cardGroupIndex++;
+        const groupId = 'group_' + cardGroupIndex;
+        const groupName = defaultName || ('카드 ' + String.fromCharCode(64 + cardGroupIndex));
+
+        const container = document.getElementById('card-groups-container');
+        const cardDiv = document.createElement('div');
+        cardDiv.className = 'card';
+        cardDiv.id = groupId;
+        cardDiv.innerHTML = `
+            <div class="card-title">
+                <input type="text" class="header-input card-title-input" style="font-size:13px; text-align:left !important; width:140px !important;" value="💳 ${groupName}" oninput="syncCardName('${groupId}', this.value)">
+                <div>
+                    <button class="btn btn-add" onclick="addCardSubItem('${groupId}')">+ 항목</button>
+                    <button class="btn btn-del" style="margin-left:4px;" onclick="deleteCardGroup('${groupId}')">그룹 삭제</button>
+                </div>
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>항목명</th>
+                            <th class="text-right" style="width: 90px;">금액</th>
+                            <th class="text-center" style="width: 35px;">삭제</th>
+                        </tr>
+                    </thead>
+                    <tbody id="${groupId}-tbody">
+                        <tr>
+                            <td><input type="text" class="text-left" value="고정지출 1"></td>
+                            <td><input type="number" class="card-item-${groupId}" value="0" oninput="calcCardGroup('${groupId}')"></td>
+                            <td class="text-center"><button class="btn btn-del" onclick="deleteCardSubItem(this, '${groupId}')">X</button></td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr class="total-row">
+                            <td>합계</td>
+                            <td class="text-right total-val" id="${groupId}-total">0원</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        `;
+        container.appendChild(cardDiv);
+
+        const tbody = document.getElementById('flow-tbody');
+        const tr = document.createElement('tr');
+        tr.id = 'flow-row-' + groupId;
+        tr.dataset.linkedCard = groupId;
+
+        const monthCount = document.querySelectorAll('.th-month').length;
+        let monthInputsHtml = '';
+        for (let i = 0; i < monthCount; i++) {
+            monthInputsHtml += `<td><input type="number" class="flow-item card-linked-${groupId}" value="0" oninput="calcAllMonths()"></td>`;
+        }
+
+        tr.innerHTML = `
+            <td><input type="text" class="text-left flow-card-label" value="${groupName} 🔗" readonly style="font-weight:600;"></td>
+            ${monthInputsHtml}
+            <td class="text-center del-cell"><span style="color:#aaa; font-size:10px;">연동됨</span></td>
+        `;
+        tbody.appendChild(tr);
+
+        calcCardGroup(groupId);
+    }
+
+    function syncCardName(groupId, newName) {
+        const flowRow = document.getElementById('flow-row-' + groupId);
+        if (flowRow) {
+            const labelInput = flowRow.querySelector('.flow-card-label');
+            if (labelInput) {
+                const cleanName = newName.replace('💳', '').trim();
+                labelInput.value = (cleanName || '카드 그룹') + ' 🔗';
+            }
+        }
+        updateChart();
+    }
+
+    function deleteCardGroup(groupId) {
+        if (document.querySelectorAll('#card-groups-container .card').length <= 1) {
+            alert('최소 1개의 카드/고정지출 그룹은 유지되어야 합니다.');
+            return;
+        }
+        const groupCard = document.getElementById(groupId);
+        if (groupCard) groupCard.remove();
+
+        const flowRow = document.getElementById('flow-row-' + groupId);
+        if (flowRow) flowRow.remove();
+
+        calcAllMonths();
+    }
+
+    function addCardSubItem(groupId) {
+        const tbody = document.getElementById(groupId + '-tbody');
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td><input type="text" class="text-left" value="새 항목"></td>
+            <td><input type="number" class="card-item-${groupId}" value="0" oninput="calcCardGroup('${groupId}')"></td>
+            <td class="text-center"><button class="btn btn-del" onclick="deleteCardSubItem(this, '${groupId}')">X</button></td>
+        `;
+        tbody.appendChild(tr);
+        calcCardGroup(groupId);
+    }
+
+    function deleteCardSubItem(btn, groupId) {
+        btn.closest('tr').remove();
+        calcCardGroup(groupId);
+    }
+
+    function getCardGroupSum(groupId) {
+        const inputs = document.querySelectorAll('.card-item-' + groupId);
+        let sum = 0;
+        inputs.forEach(input => sum += Number(input.value) || 0);
+        return sum;
+    }
+
+    function calcCardGroup(groupId) {
+        const sum = getCardGroupSum(groupId);
+        const totalEl = document.getElementById(groupId + '-total');
+        if (totalEl) totalEl.textContent = formatNumber(sum);
+
+        // 연동된 월별 자금 흐름 입력란 전체 금액 즉시 업데이트
+        document.querySelectorAll('.card-linked-' + groupId).forEach(input => {
+            input.value = sum;
+        });
+        calcAllMonths();
+    }
+
+    // 6. 은행/목표 추가
+    function addBankRow() {
+        const tbody = document.getElementById('bank-tbody');
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td><input type="text" class="text-left" value="새 은행"></td>
+            <td><input type="text" class="text-left" value="000-0000-0000"></td>
+            <td><input type="text" class="text-center" value="1일"></td>
+            <td><input type="number" value="0"></td>
+            <td class="text-center"><button class="btn btn-del" onclick="deleteRow(this)">X</button></td>
+        `;
+        tbody.appendChild(tr);
+    }
+
+    function addGoalRow() {
+        const tbody = document.getElementById('goal-tbody');
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td><input type="text" class="text-left" value="새 목표 항목"></td>
+            <td>
+                <select>
+                    <option value="목표" selected>목표</option>
+                    <option value="상환방법">상환</option>
+                    <option value="적립방법">적립</option>
+                </select>
+            </td>
+            <td><input type="text" class="text-left" value="계획 입력"></td>
+            <td class="text-center"><button class="btn btn-del" onclick="deleteRow(this)">X</button></td>
+        `;
+        tbody.appendChild(tr);
+    }
+
+    // 7. 자금 흐름 계산 및 차트 동적 업데이트
+    function calcAllMonths() {
+        const monthHeaders = document.querySelectorAll('.th-month');
+        const totalTds = document.querySelectorAll('#total-tr .total-val');
+        const remTds = document.querySelectorAll('#rem-tr .rem-val');
+        const incomeInputs = document.querySelectorAll('#income-row .flow-inc');
+
+        monthHeaders.forEach((th, colIdx) => {
+            let sum = 0;
+            const rows = document.querySelectorAll('#flow-tbody tr:not(#income-row)');
+            rows.forEach(row => {
+                const input = row.children[colIdx + 1]?.querySelector('input');
+                if (input) {
+                    sum += Number(input.value) || 0;
+                }
+            });
+
+            const income = Number(incomeInputs[colIdx] ? incomeInputs[colIdx].value : 0);
+            const remaining = income - sum;
+
+            if (totalTds[colIdx]) totalTds[colIdx].textContent = formatNumber(sum);
+            if (remTds[colIdx]) remTds[colIdx].textContent = formatNumber(remaining);
+        });
+
+        updateChart();
+    }
+
+    // 8. 카드별 1자 막대 그래프 업데이트 함수
+    function updateChart() {
+        const chartContainer = document.getElementById('card-chart-container');
+        chartContainer.innerHTML = '';
+
+        const cardGroups = document.querySelectorAll('#card-groups-container .card');
+        let cardData = [];
+        let maxSum = 0;
+
+        cardGroups.forEach(group => {
+            const groupId = group.id;
+            const titleInput = group.querySelector('.card-title-input');
+            const name = titleInput ? titleInput.value.replace('💳', '').trim() : '카드';
+            const sum = getCardGroupSum(groupId);
+
+            cardData.push({ name, sum });
+            if (sum > maxSum) maxSum = sum;
+        });
+
+        if (cardData.length === 0) {
+            chartContainer.innerHTML = '<div style="color:#aaa; font-size:12px; text-align:center;">등록된 카드가 없습니다.</div>';
+            return;
+        }
+
+        cardData.forEach(item => {
+            const row = document.createElement('div');
+            row.className = 'chart-row';
+
+            const percentage = maxSum > 0 ? (item.sum / maxSum) * 100 : 0;
+
+            row.innerHTML = `
+                <div class="chart-label" title="${item.name}">${item.name}</div>
+                <div class="chart-bar-bg">
+                    <div class="chart-bar-fill" style="width: ${percentage}%;"></div>
+                </div>
+                <div class="chart-value">${formatNumber(item.sum)}</div>
+            `;
+            chartContainer.appendChild(row);
+        });
+    }
+
+    window.onload = function() {
+        addCardGroup('카드 A');
+        addCardGroup('카드 B');
+        calcAllMonths();
+    };
+</script>
+
+</body>
+</html>
